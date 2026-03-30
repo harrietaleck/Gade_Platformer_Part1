@@ -2,6 +2,11 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
+# Library/ and Temp/ (no leading slash) match at any folder depth — needed when the
+# Unity project is nested (e.g. Gade_Platformer_Part1/Gade_Platformer_Part1/).
+Library/
+Temp/
+
 .utmp/
 /[Ll]ibrary/
 /[Tt]emp/
@@ -73,5 +78,3 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-
-/Library
