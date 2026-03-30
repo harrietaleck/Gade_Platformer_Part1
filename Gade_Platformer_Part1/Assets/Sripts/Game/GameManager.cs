@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
     public int lives = 3;
     public int score = 0;
     public int thermalStones = 0;
+    public int foodSupplies = 0;
+    public int winterClothing = 0;
 
     private void Awake()
     {
@@ -31,6 +33,24 @@ public class GameManager : MonoBehaviour
     public void AddThermalStone(int amount)
     {
         thermalStones += amount;
+        UIManager.Instance?.RefreshHUD();
+    }
+
+    public void AddFoodSupply(int amount)
+    {
+        foodSupplies += amount;
+        UIManager.Instance?.RefreshHUD();
+    }
+
+    public void AddWinterClothing(int amount)
+    {
+        winterClothing += amount;
+        UIManager.Instance?.RefreshHUD();
+    }
+
+    public void GainLife(int amount = 1)
+    {
+        lives += amount;
         UIManager.Instance?.RefreshHUD();
     }
 
