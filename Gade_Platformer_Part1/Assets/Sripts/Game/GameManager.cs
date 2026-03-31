@@ -54,10 +54,5 @@ public class GameManager : MonoBehaviour
         UIManager.Instance?.RefreshHUD();
     }
 
-    public void LoseLife(int amount = 1)
-    {
-        lives -= amount;
-        if (lives < 0) lives = 0;
-        UIManager.Instance?.RefreshHUD();
-    }
+    
 }

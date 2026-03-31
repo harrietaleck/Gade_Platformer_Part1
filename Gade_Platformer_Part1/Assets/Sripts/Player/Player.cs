@@ -40,5 +40,7 @@ public class Player : MonoBehaviour
 
         controller.Move(move * Time.deltaTime);
     }
+
+
 }
 //CharacterController movement: WASD to move on the ground, Space to jump (Unity Jump input)
