@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-// FIFO queue for dialogue (Queue ADT for assignment)
+// FIFO queue for dialogue (Queue ADT)
 public class DialogueQueue<T>
 {
     private readonly List<T> items = new List<T>();

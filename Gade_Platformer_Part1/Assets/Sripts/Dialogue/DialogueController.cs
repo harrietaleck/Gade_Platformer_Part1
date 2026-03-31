@@ -15,7 +15,7 @@ public class DialogueController : MonoBehaviour
     [Header("Dialogue data (drag 3 assets here)")]
     public List<SceneDialogueData> allSceneDialogueData = new List<SceneDialogueData>();
 
-    // Queue ADT — holds lines in order (FIFO)
+    // Queue ADT — holds lines in order 
     private DialogueQueue<DialogueLine> dialogueQueue = new DialogueQueue<DialogueLine>();
 
     private void Start()
