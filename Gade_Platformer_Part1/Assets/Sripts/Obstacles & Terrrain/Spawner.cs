@@ -1,16 +1,36 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+public class Spawner : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public GameObject[] spawnObjects;
+    public Collider spawnArea;
+
+    public int spawnCount = 5; // 👈 control how many spawn
     void Start()
     {
-        
+        Spawnner();
     }
-
-    // Update is called once per frame
-    void Update()
+    void Spawnner()
     {
-        
+        for (int i = 0; i < spawnCount; i++)
+        {
+            if (gameObject.name == "Platforms")
+            {
+                if (spawnObjects.Length == 0) return;
+
+                //Pick a random oject from the array
+                GameObject random = spawnObjects[Random.Range(0, spawnObjects.Length)];
+
+                Bounds bounds = spawnArea.bounds;
+                //Get radom positions on the object
+                float x = Random.Range(spawnArea.bounds.min.x, spawnArea.bounds.max.x);
+                float z = Random.Range(spawnArea.bounds.min.z, spawnArea.bounds.max.z);
+
+                Vector3 spawnPos = new Vector3(x, bounds.max.y, z);
+
+                //Then spawn it
+                Instantiate(random, spawnPos, Quaternion.identity);
+            }
+        }
     }
 }

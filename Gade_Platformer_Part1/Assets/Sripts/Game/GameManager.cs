@@ -7,9 +7,9 @@ public class GameManager : MonoBehaviour
     [Header("Player Stats")]
     public int lives = 3;
     public int score = 0;
-    public int thermalStones = 5;
+    public int thermalStones = 10;
     public int temperature = 30;
-    public int foodSupplies = 0;
+    public int foodSupplies = 10;
     public int winterClothing = 0;
     public float timerCount = 0f;
     PlayerCheckpointDatat playerCheckpointDatat;
@@ -39,17 +39,6 @@ public class GameManager : MonoBehaviour
         thermalStones += amount;
         UIManager.Instance?.RefreshHUD();
     }
-    public void DecreaseThermalStone(int amount)
-    {
-        if (playerCheckpointDatat == null) return;
-        thermalStones -= amount;
-        if (thermalStones == 0)
-        {
-            playerCheckpointDatat.Death();
-            thermalStones = 5;
-        }
-        UIManager.Instance?.RefreshHUD();
-    }
 
     public void AddFoodSupply(int amount)
     {
@@ -70,12 +59,22 @@ public class GameManager : MonoBehaviour
     }
     void Update()
     {
+        if (playerCheckpointDatat == null) return;
         //Increase the timer count every second
         timerCount += Time.deltaTime;
+        int randomSubtract = Random.Range(1, 3); //Randomly decrease using te value assigned to this
 
-        if (timerCount >= 20.0f)
+        if (timerCount >= 5.0f)
         {
-            DecreaseThermalStone(1);
+            thermalStones -= randomSubtract;
+            foodSupplies -= randomSubtract;
+            if (thermalStones == 0 && foodSupplies == 0)
+            {
+                playerCheckpointDatat.Death();
+                thermalStones = 10;
+                foodSupplies = 10;
+            }
+            UIManager.Instance?.RefreshHUD();
             timerCount = 0;
         }
             

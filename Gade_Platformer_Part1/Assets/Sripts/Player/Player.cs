@@ -39,11 +39,17 @@ public class Player : MonoBehaviour
         move.y = verticalVelocity;
 
         controller.Move(move * Time.deltaTime);
-    }
 
-    void Deathposition()
-    {
-        
+        //Rotate with a mouse
+        float mouseX = Input.GetAxis("Mouse X");
+        transform.Rotate(Vector3.up * mouseX);
+        //Walk in the direction the rotation is facing
+        Vector3 forward = transform.forward * z;
+        Vector3 right = transform.right * h;
+        Vector3 direction = (forward + right).normalized;
+        controller.Move(direction * moveSpeed * Time.deltaTime);
+
+
     }
 
 }

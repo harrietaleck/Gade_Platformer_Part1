@@ -83,8 +83,8 @@ public class PlayerCheckpointDatat : MonoBehaviour
     void UIText()
     {
         //Update the HUD Texts
-        if (livesText != null)
-        if (scoreText != null)
+        if (livesText == null) return;
+        if (scoreText == null) return;
 
         livesText.text = "Lives: " + lives;
         scoreText.text = "Score: " + score;

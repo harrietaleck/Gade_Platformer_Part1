@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - DeathOBST
+  - Platforms
   layers:
   - Default
   - TransparentFX
