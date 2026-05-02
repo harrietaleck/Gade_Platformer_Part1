@@ -1,4 +1,7 @@
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 // Basic 3D character for platform level, player Drop on a CharacterController + tag Player.
 
@@ -20,36 +23,64 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        float h = Input.GetAxisRaw("Horizontal");
-        float z = Input.GetAxisRaw("Vertical");
+        float h;
+        float z;
+
+#if ENABLE_INPUT_SYSTEM
+        // New Input System (ProjectSettings: activeInputHandler = 2)
+        Vector2 moveAxis = Vector2.zero;
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.aKey.isPressed) moveAxis.x -= 1f;
+            if (Keyboard.current.dKey.isPressed) moveAxis.x += 1f;
+            if (Keyboard.current.sKey.isPressed) moveAxis.y -= 1f;
+            if (Keyboard.current.wKey.isPressed) moveAxis.y += 1f;
+        }
+        h = moveAxis.x;
+        z = moveAxis.y;
+#else
+        // Old Input Manager
+        h = Input.GetAxisRaw("Horizontal");
+        z = Input.GetAxisRaw("Vertical");
+#endif
+
         Vector3 input = new Vector3(h, 0f, z);
 
         if (input.sqrMagnitude > 1f)
             input.Normalize();
 
-        Vector3 move = input * moveSpeed;
+        // Rotate with mouse (or ignore if not using mouse)
+        float mouseX = 0f;
+#if ENABLE_INPUT_SYSTEM
+        if (Mouse.current != null)
+            mouseX = Mouse.current.delta.ReadValue().x;
+#else
+        mouseX = Input.GetAxis("Mouse X");
+#endif
+        transform.Rotate(Vector3.up * mouseX);
+
+        // Move relative to where the player is facing
+        Vector3 move = (transform.right * h + transform.forward * z);
+        if (move.sqrMagnitude > 1f)
+            move.Normalize();
+        move *= moveSpeed;
 
         if (controller.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
 
-        if (Input.GetButtonDown("Jump") && controller.isGrounded)
+#if ENABLE_INPUT_SYSTEM
+        bool jumpPressed = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+#else
+        bool jumpPressed = Input.GetButtonDown("Jump");
+#endif
+
+        if (jumpPressed && controller.isGrounded)
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
         verticalVelocity += gravity * Time.deltaTime;
         move.y = verticalVelocity;
 
         controller.Move(move * Time.deltaTime);
-
-        //Rotate with a mouse
-        float mouseX = Input.GetAxis("Mouse X");
-        transform.Rotate(Vector3.up * mouseX);
-        //Walk in the direction the rotation is facing
-        Vector3 forward = transform.forward * z;
-        Vector3 right = transform.right * h;
-        Vector3 direction = (forward + right).normalized;
-        controller.Move(direction * moveSpeed * Time.deltaTime);
-
-
     }
 
 }
