@@ -1,11 +1,11 @@
-﻿ using UnityEngine;
+﻿using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
     public GameObject[] spawnObjects;
     public Collider spawnArea;
 
-    public int spawnCount = 5; 
+    public int spawnCount = 5; // 👈 control how many spawn
     void Start()
     {
         Spawnner();
