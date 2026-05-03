@@ -4,39 +4,24 @@ using System.Collections;
 public class StartingScreen : MonoBehaviour
 {
     public GameObject startingScreenUI;
-    public GameObject menuScreenUI;
+    private float delayTime = 3f; // seconds before switching
+    private float timer = 0f;
+    
+    void Update()
+    {
+        startingScreenUI.SetActive(true);
+        //Increment time to 5 seconds 
+        timer += Time.deltaTime;
+        Debug.Log(timer);
 
-    void Start()
-    {
-        ShowStartingScreen();
-    }
-    void ShowStartingScreen()
-    {
-        startingScreenUI.SetActive(true);
-        menuScreenUI.SetActive(false);
-    }
-    public void Play()
-    {
-        startingScreenUI.SetActive(false);
-        menuScreenUI.SetActive(false);
-    }
-    public void ExitGamePlay()
-    {
-        Application.Quit();
-    }
-    public void Menu()
-    {
-        startingScreenUI.SetActive(false);
-        menuScreenUI.SetActive(true);
-    }
-    public void Resume()
-    {
-        startingScreenUI.SetActive(true);
-        menuScreenUI.SetActive(false);
+        if (timer >= delayTime)
+        {
+            Scene2();
+
+        }
     }
     public void Scene2()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Advanced");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Beginner");
     }
-
 }

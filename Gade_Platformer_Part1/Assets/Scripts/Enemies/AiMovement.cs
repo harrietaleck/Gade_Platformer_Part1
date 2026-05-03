@@ -1,39 +1,30 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Waypoints : MonoBehaviour
+public class AiMovement : MonoBehaviour
 {
-    public Transform[] deliveryPoints;
+    public Transform player;
 
+    public int enemyHP = 100;
     private NavMeshAgent agent;
-    private int currentPoint = 1;
+    private Patrol patrolScript;
 
-    void Start()
+    private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        patrolScript = GetComponent<Patrol>();
 
-        // Fixed ERROR 1: Check that deliveryPoints contains items
-        if (deliveryPoints == null || deliveryPoints.Length == 0)
+        if (player == null)
         {
-            Debug.LogError("No delivery points assigned!");
-            enabled = false;
-            return;
+            Debug.LogError("Player not attatched");
         }
-
-        // Fixed ERROR 2: Start at the correct point index (0)
-        agent.SetDestination(deliveryPoints[currentPoint].position);
     }
-
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        // Fixed ERROR 3: Correct condition for arrival
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        if (other.CompareTag("Player"))
         {
-            // Fixed ERROR 4: Move to the next point (not skipping)
-            currentPoint = (currentPoint + 1) % deliveryPoints.Length;
-
-            // Fixed ERROR 5: Prevent out-of-range crash
-            agent.SetDestination(deliveryPoints[currentPoint].position);
+            //MoveTowardsPlayer();
         }
     }
 }

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - DeathOBST
   - Platforms
+  - Enemy
   layers:
   - Default
   - TransparentFX
