@@ -15,9 +15,19 @@ public class Player : MonoBehaviour
 
     private CharacterController controller;
     private float verticalVelocity;
+    private float horizontalInput;
+    private float verticalInput;
+    private bool jumpPressedThisFrame;
+
+    // Values the animation state system reads
+    public bool IsGrounded => controller != null && controller.isGrounded;
+    public float VerticalVelocity => verticalVelocity;
+    public float MoveMagnitude => new Vector2(horizontalInput, verticalInput).magnitude;
+    public bool JumpPressedThisFrame => jumpPressedThisFrame;
 
     private void Awake()
     {
+        // Cache controller once
         controller = GetComponent<CharacterController>();
     }
 
@@ -27,7 +37,7 @@ public class Player : MonoBehaviour
         float z;
 
 #if ENABLE_INPUT_SYSTEM
-        // New Input System (ProjectSettings: activeInputHandler = 2)
+        // Read WASD from the new Input System
         Vector2 moveAxis = Vector2.zero;
         if (Keyboard.current != null)
         {
@@ -39,7 +49,7 @@ public class Player : MonoBehaviour
         h = moveAxis.x;
         z = moveAxis.y;
 #else
-        // Old Input Manager
+        // Read movement from old Input Manager
         h = Input.GetAxisRaw("Horizontal");
         z = Input.GetAxisRaw("Vertical");
 #endif
@@ -49,7 +59,7 @@ public class Player : MonoBehaviour
         if (input.sqrMagnitude > 1f)
             input.Normalize();
 
-        // Rotate with mouse (or ignore if not using mouse)
+        // Turn player using mouse X
         float mouseX = 0f;
 #if ENABLE_INPUT_SYSTEM
         if (Mouse.current != null)
@@ -59,24 +69,32 @@ public class Player : MonoBehaviour
 #endif
         transform.Rotate(Vector3.up * mouseX);
 
-        // Move relative to where the player is facing
+        // Move in local forward/right direction
         Vector3 move = (transform.right * h + transform.forward * z);
         if (move.sqrMagnitude > 1f)
             move.Normalize();
         move *= moveSpeed;
 
+        // Keep a tiny downward force while grounded
         if (controller.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
 
 #if ENABLE_INPUT_SYSTEM
+        // Space key jump (new Input System)
         bool jumpPressed = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
 #else
+        // Jump button (old Input Manager)
         bool jumpPressed = Input.GetButtonDown("Jump");
 #endif
+        jumpPressedThisFrame = jumpPressed;
+        horizontalInput = h;
+        verticalInput = z;
 
+        // Start jump
         if (jumpPressed && controller.isGrounded)
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
+        // Apply gravity and move
         verticalVelocity += gravity * Time.deltaTime;
         move.y = verticalVelocity;
 
