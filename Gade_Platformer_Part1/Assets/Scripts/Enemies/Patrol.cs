@@ -3,7 +3,7 @@ using UnityEngine.AI;
 
 public class Patrol : MonoBehaviour
 {
-    /*public Transform[] patrolPoints;
+    public Transform[] patrolPoints;
     private int currentPointIndex = 0;
 
     private NavMeshAgent agent;
@@ -29,8 +29,8 @@ public class Patrol : MonoBehaviour
             currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
             agent.SetDestination(patrolPoints[currentPointIndex].position);
         }
-    }*/
-    public Transform[] points;
+    }
+   /* public Transform[] points;
     public float speed = 3f;
 
     private int index = 0;
@@ -65,6 +65,6 @@ public class Patrol : MonoBehaviour
             target,
             speed * Time.deltaTime
         );
-    }
+    }*/
 
 }
