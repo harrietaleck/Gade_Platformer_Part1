@@ -74,7 +74,7 @@ public class PlayerCheckpointDatat : MonoBehaviour
     {
         PlayerDied();
     }
-    public void LoseLife(int amount = 1)
+    public void LoseLife()
     {
         lives -= amount;
         if (lives == 0)
