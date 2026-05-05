@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: igloo
+  m_Name: Snow2
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -115,13 +115,13 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.8969526, g: 0.9881767, b: 0.9924528, a: 1}
-    - _Color: {r: 0.8969526, g: 0.98817664, b: 0.9924528, a: 1}
+    - _BaseColor: {r: 0.82430047, g: 0.97735846, b: 0.9578371, a: 1}
+    - _Color: {r: 0.82430047, g: 0.9773584, b: 0.95783705, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &6141198246063165303
+--- !u!114 &66792557794473821
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
