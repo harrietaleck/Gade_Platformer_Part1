@@ -3,7 +3,6 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
-using UnityEngine.InputSystem.XR;
 
 public class AiControllerA : MonoBehaviour
 {
@@ -35,9 +34,6 @@ public class AiControllerA : MonoBehaviour
     //Player position Declaration
     public Transform player;
 
-    PlayerCheckpointDatat playerData;
-    private int attackDamageThreshold;
-
     //Enemy declaration
     public float chaseRange = 10f;
     public float attackRange = 2f;
@@ -62,10 +58,6 @@ public class AiControllerA : MonoBehaviour
             patrolPath.AddLast(patrolPoints[i]);
         }
 
-        playerData = player.GetComponent<PlayerCheckpointDatat>();
-
-        //Set the threshold damage for the player
-        attackDamageThreshold = Random.Range(3, 6);
         //Start at the first point of the node
         currentPatrolNode = patrolPath.First;
         if (currentPatrolNode != null)
@@ -140,17 +132,6 @@ public class AiControllerA : MonoBehaviour
             //Increase the hit counter
             hitCounter++;
             Debug.Log("Hit Counter: " + hitCounter);
-            if (hitCounter >= attackDamageThreshold)
-            {
-                Debug.Log("Player hit damage max!");
-                //Call the lose life function to decrease the player's health
-                if (playerData != null)
-                    playerData.lives -= 1;
-                //Reset the hit counter
-                hitCounter = 0;
-                //Reset the attack damage threshold
-                attackDamageThreshold = Random.Range(3, 6);
-            }
 
         }
     }
@@ -237,33 +218,7 @@ public class AiControllerA : MonoBehaviour
             currentState = State.Chasing;
         }
     }
-    void OnTriggerEnter(Collider other)
-    {
-        if (!other.CompareTag("Player")) return;
 
-        if (gameObject.name == "ChaseZone")
-        {
-            GetComponentInParent<AiControllerA>().playerInChase = true;
-        }
-        else if (gameObject.name == "AttackZone")
-        {
-            GetComponentInParent<AiControllerA>().playerInAttack = true;
-        }
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("Player")) return;
-
-        if (gameObject.name == "ChaseZone")
-        {
-            GetComponentInParent<AiControllerA>().playerInChase = false;
-        }
-        else if (gameObject.name == "AttackZone")
-        {
-            GetComponentInParent<AiControllerA>().playerInAttack = false;
-        }
-    }
     /*public Transform[] patrolPoints;
     private int currentPointIndex = 0;
 
