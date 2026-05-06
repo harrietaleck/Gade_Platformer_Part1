@@ -37,7 +37,7 @@ public class Patrol : MonoBehaviour
     PlayerCheckpointDatat playerData;
 
     //Enemy declaration
-    public float chaseRange = 10f;
+    public float chaseRange = 5f;
     public float attackRange = 2f;
     private float distanceToPlayer;
     
@@ -127,6 +127,13 @@ public class Patrol : MonoBehaviour
     }
     public void Attacking()
     {
+        //Check if player is in range 
+        if(!playerInAttack)
+        {
+            agent.isStopped = false;
+            return;
+        }
+            
         agent.isStopped = true;
         //Direct the emeny to look at the player
         transform.LookAt(player);
@@ -145,13 +152,11 @@ public class Patrol : MonoBehaviour
                 Debug.Log("Player hit damage max!");
                 //Call the lose life function to decrease the player's health
                 if (playerData != null)
-                    playerData.LoseLife();
+                    playerData.lives--;
                 //Reset the hit counter
                 hitCounter = 0;
                 //Reset the attack damage threshold
                 attackDamageThreshold = Random.Range(3, 6);
-                //Perform attack logic here(health decrease must be called)
-                Debug.Log("Attacking the player!");
             }
         }
     }
@@ -182,6 +187,8 @@ public class Patrol : MonoBehaviour
     }
     void ChaseState()
     {
+        //Set movemnt as always on
+        agent.isStopped = false;
         //Call the chase function
         ChasePLY();
         //Transition to return state if the player is out of chase range
@@ -203,6 +210,7 @@ public class Patrol : MonoBehaviour
         //Transition to chase state in chase range if not in attack range
         if (!playerInAttack)
         { 
+            agent.isStopped = false;
             currentState = State.Chasing; 
         }
     }
@@ -218,7 +226,6 @@ public class Patrol : MonoBehaviour
     }
     void Returning()
     {
-
         //Check if the enemy is at the patrol point
         if (currentPatrolNode != null)
             agent.SetDestination(currentPatrolNode.Value.position);
