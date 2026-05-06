@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-public class AiController : MonoBehaviour
-{//State declaration
+public class AiControllerA : MonoBehaviour
+{
+    //State declaration
     public State currentState;
     private Dictionary<State, Action> stateActions;
 
@@ -28,12 +29,10 @@ public class AiController : MonoBehaviour
     private float lastAttackTime;
     private float bounceForce = 5f;
     private float bouncecoolDownPoint = 2f;
-    private int hitCounter = 0;
-    private int attackDamageThreshold;
+    public int hitCounter = 0;
 
     //Player position Declaration
     public Transform player;
-    PlayerCheckpointDatat playerData;
 
     //Enemy declaration
     public float chaseRange = 10f;
@@ -52,8 +51,7 @@ public class AiController : MonoBehaviour
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        playerData = player.GetComponent<PlayerCheckpointDatat>();
-
+        
         //Create a for loop to convert the list into a linked list
         for (int i = 0; i < patrolPoints.Count; i++)
         {
@@ -69,10 +67,6 @@ public class AiController : MonoBehaviour
 
         //Set the enemy to patrolling at the start of the game
         currentState = State.Patrolling;
-
-        //Set the threshold damage for the player
-        attackDamageThreshold = Random.Range(3, 6);
-
         //Set up the state actions
         stateActions = new Dictionary<State, Action>
         {
@@ -139,19 +133,6 @@ public class AiController : MonoBehaviour
             hitCounter++;
             Debug.Log("Hit Counter: " + hitCounter);
 
-            if (hitCounter >= attackDamageThreshold)
-            {
-                Debug.Log("Player hit damage max!");
-                //Call the lose life function to decrease the player's health
-                if (playerData != null)
-                    playerData.LoseLife();
-                //Reset the hit counter
-                hitCounter = 0;
-                //Reset the attack damage threshold
-                attackDamageThreshold = Random.Range(3, 6);
-                //Perform attack logic here(health decrease must be called)
-                Debug.Log("Attacking the player!");
-            }
         }
     }
     // Change the access modifier of the BounceOffPLY method to public to fix the CS0122 error.
@@ -237,4 +218,27 @@ public class AiController : MonoBehaviour
             currentState = State.Chasing;
         }
     }
+
+    /*public Transform[] patrolPoints;
+    private int currentPointIndex = 0;
+
+    private NavMeshAgent agent;
+
+    private void Start()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        if (patrolPoints.Length > 0)
+        {
+            agent.SetDestination(patrolPoints[currentPointIndex].position);// Set the destionation to the first patrol point
+        }
+
+    }
+    private void Update()
+    {
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        {
+            currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
+            agent.SetDestination(patrolPoints[currentPointIndex].position);
+        }
+    }*/
 }
