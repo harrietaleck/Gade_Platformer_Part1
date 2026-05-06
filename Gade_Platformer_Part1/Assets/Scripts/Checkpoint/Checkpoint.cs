@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Checkpoint : MonoBehaviour
+// Pure Stack ADT class (not a MonoBehaviour component)
+public class Checkpoint
 {
     //Use the standardize stat data structure to store checkpoints
     private Stack<CheckpointData> stack = new Stack<CheckpointData>();

@@ -51,7 +51,19 @@ public class AiControllerA : MonoBehaviour
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        
+
+        // Auto-resolve the Player by tag if it wasn't wired in the Inspector.
+        // Avoids "UnassignedReferenceException: variable player has not been assigned"
+        // on enemies that were dropped into the scene without manual wiring.
+        if (player == null)
+        {
+            var found = GameObject.FindGameObjectWithTag("Player");
+            if (found != null)
+                player = found.transform;
+            else
+                Debug.LogWarning($"AiControllerA on '{name}': no GameObject tagged 'Player' found.", this);
+        }
+
         //Create a for loop to convert the list into a linked list
         for (int i = 0; i < patrolPoints.Count; i++)
         {
