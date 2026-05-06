@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class SceneryLoading : MonoBehaviour
 {
-    void OnControllerColliderHit(ControllerColliderHit hit)
+    private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (hit.gameObject.CompareTag("Player"))
         {

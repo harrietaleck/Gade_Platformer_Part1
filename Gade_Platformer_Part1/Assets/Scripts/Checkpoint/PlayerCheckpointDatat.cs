@@ -3,11 +3,12 @@ using TMPro;
 using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 public class PlayerCheckpointDatat : MonoBehaviour
 {
     private Checkpoint checkpointStack = new Checkpoint();
 
-    public int lives = 3;
+    public int lives;
     public int score = 0;
     public int amount = 1;
 
@@ -16,12 +17,14 @@ public class PlayerCheckpointDatat : MonoBehaviour
 
     private void Start()
     {
+        lives = 3;
         //save the player starting point at the checkpoint
         CheckpointSave();
+        UIText();
+
     }
     void Update()
     {
-        UIText();
     }
 
     //Save the check point of the player (position, lives, score) using PlayerPrefs saving system
@@ -60,11 +63,7 @@ public class PlayerCheckpointDatat : MonoBehaviour
         {
             controller.enabled = true;
         }
-        //Set the lives and score of the player to the checkpoint data
-        PlayerPrefs.SetInt("Score", score);
-        PlayerPrefs.SetInt("Lives", lives);
-        PlayerPrefs.Save();
-
+        UIText();
         Debug.Log("Respawned at: " + respawnPos);
     }
     //Call the checkpoint save and player death functions to be used in ther scripts
@@ -80,7 +79,12 @@ public class PlayerCheckpointDatat : MonoBehaviour
     {
         lives -= amount;
         if (lives == 0)
-            Debug.Log("Player dies");
+        {
+            Debug.Log("Game Over");
+            lives = 3;
+            SceneManager.LoadScene("StartScreen");
+        }
+        UIText();
     }
     void UIText()
     {

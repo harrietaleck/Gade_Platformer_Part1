@@ -1,15 +1,14 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneryLoading1 : MonoBehaviour
+public class SceneryLoadStart : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider other)
+   private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             Debug.Log("Player entered trigger!");
-            SceneManager.LoadScene("Expert");
+            SceneManager.LoadScene("StartScreen");
         }
     }
-
 }
