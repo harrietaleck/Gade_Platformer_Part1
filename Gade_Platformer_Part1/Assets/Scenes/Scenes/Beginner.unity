@@ -693,9 +693,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 967c6a91108c3a34ebb53163a4b38c48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  points: []
-  speed: 3
-  isChasing: 0
+  currentState: 0
+  playerInChase: 0
+  playerInAttack: 0
+  patrolPoints: []
+  isAttacking: 0
+  coolDownPoint: 2
+  player: {fileID: 1793650408}
+  chaseRange: 5
+  attackRange: 2
 --- !u!1 &54905970
 GameObject:
   m_ObjectHideFlags: 0
@@ -4640,11 +4646,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 967c6a91108c3a34ebb53163a4b38c48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  points:
-  - {fileID: 250765944}
-  - {fileID: 1561112518}
-  speed: 3
-  isChasing: 0
+  currentState: 0
+  playerInChase: 0
+  playerInAttack: 0
+  patrolPoints: []
+  isAttacking: 0
+  coolDownPoint: 2
+  player: {fileID: 0}
+  chaseRange: 5
+  attackRange: 2
 --- !u!195 &1106786741
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -9005,9 +9015,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 967c6a91108c3a34ebb53163a4b38c48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  points: []
-  speed: 3
-  isChasing: 0
+  currentState: 0
+  playerInChase: 0
+  playerInAttack: 0
+  patrolPoints: []
+  isAttacking: 0
+  coolDownPoint: 2
+  player: {fileID: 1793650408}
+  chaseRange: 5
+  attackRange: 2
 --- !u!1001 &2145819279
 PrefabInstance:
   m_ObjectHideFlags: 0

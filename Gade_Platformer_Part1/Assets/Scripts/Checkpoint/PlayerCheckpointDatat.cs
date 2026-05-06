@@ -10,7 +10,6 @@ public class PlayerCheckpointDatat : MonoBehaviour
     public int lives = 3;
     public int score = 0;
     public int amount = 1;
-    public bool IsSaved = false;
 
     public TMP_Text livesText;
     public TMP_Text scoreText;
@@ -18,8 +17,6 @@ public class PlayerCheckpointDatat : MonoBehaviour
     private void Start()
     {
         //save the player starting point at the checkpoint
-        if (livesText == null) return;
-        if (scoreText == null) return;
         CheckpointSave();
     }
     void Update()
@@ -37,10 +34,9 @@ public class PlayerCheckpointDatat : MonoBehaviour
         PlayerPrefs.SetInt("CheckpointScore", score);
         PlayerPrefs.Save();
         Debug.Log("Checkpoint Saved! Position:" + transform.position + " Lives " + lives + " scores: " + score);
-        IsSaved = true;
     }
     //Load the checkpoint data and respawn the player at the latest checkpoint (position, lives and score}
-    public void PlayerDied()
+    void PlayerDied()
     {
         //Load the checkpoint position from the playerprefs save system
         float x = PlayerPrefs.GetFloat("CheckpointX", transform.position.x);
@@ -70,7 +66,6 @@ public class PlayerCheckpointDatat : MonoBehaviour
         PlayerPrefs.Save();
 
         Debug.Log("Respawned at: " + respawnPos);
-        LoseLife(amount);
     }
     //Call the checkpoint save and player death functions to be used in ther scripts
     public void CheckpointSave()
@@ -81,7 +76,7 @@ public class PlayerCheckpointDatat : MonoBehaviour
     {
         PlayerDied();
     }
-    public void LoseLife(int amount = 1)
+    public void LoseLife()
     {
         lives -= amount;
         if (lives == 0)
