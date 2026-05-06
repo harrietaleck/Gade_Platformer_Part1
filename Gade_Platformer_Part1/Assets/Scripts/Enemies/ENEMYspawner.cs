@@ -1,73 +1,44 @@
-using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.AI;
+using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    /*public Transform[] patrolPoints;
-    private int currentPointIndex = 0;
+    //Enemy Spawner Declaration
+    public List<GameObject> enemyPrefabs;
+    public List<Transform> spawnPoints;
 
-    private NavMeshAgent agent;
-    public bool isAttacking = false;
-
-    private void Start()
+    void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        if (patrolPoints.Length > 0)
-        {
-            agent.SetDestination(patrolPoints[currentPointIndex].position);// Set the destionation to the first patrol point
-        }
-
+        SpawnEnemies();
     }
-    private void Update()
+    void SpawnEnemies()
     {
-        if (isAttacking)
+        //Copy spawn point list
+        List<Transform> availableSpawnPoints = new List<Transform>(spawnPoints);
+
+        //Shuffle the spawn list
+        ShuffleList(availableSpawnPoints);
+
+        //Spawn enemies at random spawn points
+        int spawnCount = Mathf.Min(enemyPrefabs.Count, availableSpawnPoints.Count);
+
+        for (int i = 0; i < spawnCount; i++)
         {
-            return;
-        }
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-        {
-            currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-            agent.SetDestination(patrolPoints[currentPointIndex].position);
+            //spawn the enemy at the spawn point
+            GameObject enemyPrefab = enemyPrefabs[i];
+            Transform spawnPoint = availableSpawnPoints[i];
+            Instantiate(enemyPrefabs[i], availableSpawnPoints[i].position, Quaternion.identity);
         }
     }
-}*/
+    void ShuffleList(List<Transform> list)
+    {
+        //Fisher-Yates Shuffle Algorithm
+        for (int i = 0; i < list.Count; i++)
+        {
+            Transform temp = list[i];
+            int randomIndex = Random.Range(i, list.Count);
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
+    }
 }
-        // Spawn Declaration
-        /*public List<GameObject> animalPrefabs;
-        public List<Transform> spawnPoints;
-
-        void Start()
-        {
-            SpawnAnimals();
-        }
-
-        void SpawnAnimals()
-        {
-            //Generate a random index to select a random enemy prefab from the list
-            //int randomIndex = Random.Range(0, animalPrefabs.Count);
-
-            /*int count = Mathf.Min(animalPrefabs.Count, spawnPoints.Count);
-
-            for (int i = 0; i < count; i++)
-            {
-                //Place the enemy at the spawn point 
-                animalPrefabs[i].position = spawnPoints[i].position;
-            }*/
-
-        // copy spawn points so we can remove used ones
-        /*List<Transform> availableSpawns = new List<Transform>(spawnPoints);
-
-        for (int i = 0; i < animalPrefabs.Count; i++)
-        {
-            if (availableSpawns.Count == 0) break;
-
-            int randIndex = Random.Range(0, availableSpawns.Count);
-            Transform chosenSpawn = availableSpawns[randIndex];
-
-            animalPrefabs[i] = chosenSpawn.position;
-
-            availableSpawns.RemoveAt(randIndex); // prevents duplicates
-        }
-
-    }*/

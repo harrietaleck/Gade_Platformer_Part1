@@ -21,9 +21,9 @@ public class Player : MonoBehaviour
 
     [Header("Movement")]
     [Tooltip("Walking speed (no Shift held).")]
-    public float walkSpeed = 3f;
+    public float walkSpeed = 10f;
     [Tooltip("Running speed (Shift held).")]
-    public float runSpeed = 6f;
+    public float runSpeed = 20f;
     [Tooltip("Back-compat: legacy single speed used by mud/freeze triggers. " +
              "Setting this overrides both walk and run speeds.")]
     public float moveSpeed

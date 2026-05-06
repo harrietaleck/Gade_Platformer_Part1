@@ -8,7 +8,7 @@ public class DeathTrigger : MonoBehaviour
 
         if (player != null)
         {
-            player.LoseLife();
+            player.lives--;
             player.Death();
         }
     }

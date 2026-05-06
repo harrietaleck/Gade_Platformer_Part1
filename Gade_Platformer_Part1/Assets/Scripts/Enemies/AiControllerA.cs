@@ -29,13 +29,15 @@ public class AiControllerA : MonoBehaviour
     private float lastAttackTime;
     private float bounceForce = 5f;
     private float bouncecoolDownPoint = 2f;
-    public int hitCounter = 0;
+    private int hitCounter = 0;
+    private int attackDamageThreshold;
 
     //Player position Declaration
     public Transform player;
+    PlayerCheckpointDatat playerData;
 
     //Enemy declaration
-    public float chaseRange = 10f;
+    public float chaseRange = 5f;
     public float attackRange = 2f;
     private float distanceToPlayer;
 
@@ -51,18 +53,7 @@ public class AiControllerA : MonoBehaviour
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-
-        // Auto-resolve the Player by tag if it wasn't wired in the Inspector.
-        // Avoids "UnassignedReferenceException: variable player has not been assigned"
-        // on enemies that were dropped into the scene without manual wiring.
-        if (player == null)
-        {
-            var found = GameObject.FindGameObjectWithTag("Player");
-            if (found != null)
-                player = found.transform;
-            else
-                Debug.LogWarning($"AiControllerA on '{name}': no GameObject tagged 'Player' found.", this);
-        }
+        playerData = player.GetComponent<PlayerCheckpointDatat>();
 
         //Create a for loop to convert the list into a linked list
         for (int i = 0; i < patrolPoints.Count; i++)
@@ -79,6 +70,10 @@ public class AiControllerA : MonoBehaviour
 
         //Set the enemy to patrolling at the start of the game
         currentState = State.Patrolling;
+
+        //Set the threshold damage for the player
+        attackDamageThreshold = Random.Range(3, 6);
+
         //Set up the state actions
         stateActions = new Dictionary<State, Action>
         {
@@ -98,11 +93,13 @@ public class AiControllerA : MonoBehaviour
     }
     private void Update()
     {
+        if (player == null) return;
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
         //Check if the player is in chase range or attcak range
         playerInAttack = distanceToPlayer <= attackRange;
-        playerInChase = distanceToPlayer <= chaseRange;
-        stateActions[currentState].Invoke();
+        playerInChase = distanceToPlayer > attackRange && distanceToPlayer <= chaseRange;
+        if (stateActions != null && stateActions.ContainsKey(currentState))
+            stateActions[currentState]();
     }
     public void Patrolling()
     {
@@ -132,6 +129,13 @@ public class AiControllerA : MonoBehaviour
     }
     public void Attacking()
     {
+        //Check if player is in range 
+        if (!playerInAttack)
+        {
+            agent.isStopped = false;
+            return;
+        }
+
         agent.isStopped = true;
         //Direct the emeny to look at the player
         transform.LookAt(player);
@@ -145,6 +149,17 @@ public class AiControllerA : MonoBehaviour
             hitCounter++;
             Debug.Log("Hit Counter: " + hitCounter);
 
+            if (hitCounter >= attackDamageThreshold)
+            {
+                Debug.Log("Player hit damage max!");
+                //Call the lose life function to decrease the player's health
+                if (playerData != null)
+                    playerData.lives--;
+                //Reset the hit counter
+                hitCounter = 0;
+                //Reset the attack damage threshold
+                attackDamageThreshold = Random.Range(3, 6);
+            }
         }
     }
     // Change the access modifier of the BounceOffPLY method to public to fix the CS0122 error.
@@ -174,6 +189,8 @@ public class AiControllerA : MonoBehaviour
     }
     void ChaseState()
     {
+        //Set movemnt as always on
+        agent.isStopped = false;
         //Call the chase function
         ChasePLY();
         //Transition to return state if the player is out of chase range
@@ -195,6 +212,7 @@ public class AiControllerA : MonoBehaviour
         //Transition to chase state in chase range if not in attack range
         if (!playerInAttack)
         {
+            agent.isStopped = false;
             currentState = State.Chasing;
         }
     }
@@ -210,7 +228,6 @@ public class AiControllerA : MonoBehaviour
     }
     void Returning()
     {
-
         //Check if the enemy is at the patrol point
         if (currentPatrolNode != null)
             agent.SetDestination(currentPatrolNode.Value.position);
@@ -230,27 +247,4 @@ public class AiControllerA : MonoBehaviour
             currentState = State.Chasing;
         }
     }
-
-    /*public Transform[] patrolPoints;
-    private int currentPointIndex = 0;
-
-    private NavMeshAgent agent;
-
-    private void Start()
-    {
-        agent = GetComponent<NavMeshAgent>();
-        if (patrolPoints.Length > 0)
-        {
-            agent.SetDestination(patrolPoints[currentPointIndex].position);// Set the destionation to the first patrol point
-        }
-
-    }
-    private void Update()
-    {
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-        {
-            currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-            agent.SetDestination(patrolPoints[currentPointIndex].position);
-        }
-    }*/
 }
