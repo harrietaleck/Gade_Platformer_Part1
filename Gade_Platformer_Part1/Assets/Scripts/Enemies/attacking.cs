@@ -1,15 +1,13 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
-public class AiBounce : MonoBehaviour
+public class attacking : MonoBehaviour
 {
     //Declare variables
-    AiControllerA aiController;
-    public Transform player;
+    AiControllerA patrolScript;
 
     private void Start()
     {
-        aiController = GetComponent<AiControllerA>();
+        patrolScript = GetComponent<AiControllerA>();
     }
 
     //Check if the player touches the collider attack the player
@@ -17,11 +15,11 @@ public class AiBounce : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            if (aiController != null)
+            if (patrolScript != null)
             {
-                aiController.BounceOffPLY(collision);
-                
+                patrolScript.BounceOffPLY(collision);
             }
         }
     }
+
 }
