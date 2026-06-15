@@ -78,6 +78,7 @@ public class PlayerCheckpointDatat : MonoBehaviour
     public void LoseLife()
     {
         lives -= amount;
+        Debug.Log("Player Lost a Life! Lives Remaining: " + lives);
         if (lives == 0)
         {
             Debug.Log("Game Over");

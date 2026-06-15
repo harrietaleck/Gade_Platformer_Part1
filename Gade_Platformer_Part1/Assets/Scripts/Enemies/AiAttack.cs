@@ -3,7 +3,7 @@ using UnityEngine;
 public class AiAttack : MonoBehaviour
 {
     //Declare variables
-    AiControllerA patrolScript;
+    /*AiControllerA patrolScript;
 
     private void Start()
     {
@@ -20,5 +20,5 @@ public class AiAttack : MonoBehaviour
                 patrolScript.BounceOffPLY(collision);
             }
         }
-    }
+    }*/
 }
