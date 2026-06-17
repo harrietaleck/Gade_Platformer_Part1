@@ -29,6 +29,10 @@ public class AiAttack : MonoBehaviour
     // the component we call for both LoseLife() and Death().
     private PlayerCheckpointDatat checkpointData;
 
+    // Cached reference to Player — used to trigger the hurt animation
+    // (brief knockback visual + screen flash) when the player is hit.
+    private Player playerScript;
+
     // Timestamp of the last successful hit, used to enforce the cooldown.
     private float lastAttackTime = -999f;
 
@@ -45,9 +49,13 @@ public class AiAttack : MonoBehaviour
             // PlayerCheckpointDatat holds lives, score, and the respawn stack.
             // It lives on the Player GameObject itself.
             checkpointData = playerObj.GetComponent<PlayerCheckpointDatat>();
-
             if (checkpointData == null)
                 Debug.LogWarning($"AiAttack on '{name}': PlayerCheckpointDatat not found on Player.");
+
+            // Player script — used to trigger the hurt animation on hit.
+            playerScript = playerObj.GetComponent<Player>();
+            if (playerScript == null)
+                Debug.LogWarning($"AiAttack on '{name}': Player component not found — hurt animation won't play.");
         }
         else
         {
@@ -80,6 +88,9 @@ public class AiAttack : MonoBehaviour
                 // without removing it, so the same checkpoint works for multiple deaths.
                 checkpointData.Death();
             }
+
+            // Trigger knockback animation + screen flash on the player.
+            playerScript?.TriggerHurt();
 
             // Play the hit sound via the HashMap SFX Manager (Part 3 D3).
             SFXManager.Instance?.PlaySound("hit");

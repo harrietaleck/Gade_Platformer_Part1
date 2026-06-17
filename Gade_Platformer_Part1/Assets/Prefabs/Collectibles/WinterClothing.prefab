@@ -125,3 +125,4 @@ MonoBehaviour:
   scoreValue: 5
   itemAmount: 1
   livesToRestore: 0
+  collectSFX: {fileID: 8300000, guid: 79180f511d89441b9aa23ccae1992fe0, type: 3}

@@ -5,7 +5,8 @@ public class HeavyEnemy : Enemy
     protected override void ApplyVariationStats()
     {
         MoveSpeed = 0;
-        AgentSize = 1.5f;
+        AgentSize = 1.2f;
+        VisualScale = 0.42f;
         AppearanceColor = Color.blue;
         IsPatrolling = false;
     }

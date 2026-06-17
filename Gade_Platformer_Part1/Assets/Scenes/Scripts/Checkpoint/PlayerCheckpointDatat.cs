@@ -107,18 +107,27 @@ public class PlayerCheckpointDatat : MonoBehaviour
     {
         lives -= amount;
         Debug.Log("Player Lost a Life! Lives Remaining: " + lives);
+
+        // Sync GameManager lives so the HUD stays consistent
+        if (GameManager.Instance != null)
+            GameManager.Instance.lives = lives;
+
         UIText();
 
+        // Game over when all 3 lives are lost
         if (lives <= 0)
         {
-            Debug.Log("Game Over");
+            Debug.Log("Game Over — 3 lives lost.");
+
+            // Use GameManager score so pickups are reflected correctly
+            int finalScore = GameManager.Instance != null ? GameManager.Instance.score : score;
+
             if (GameOverScreen.Instance != null)
             {
-                GameOverScreen.Instance.ShowGameOver(score, lives);
+                GameOverScreen.Instance.ShowGameOver(finalScore, lives);
             }
             else
             {
-                // Fallback if GameOverScreen not present in scene
                 SceneManager.LoadScene("MainMenu");
             }
         }
