@@ -18,7 +18,8 @@ public class AiChase : MonoBehaviour
             //Chase the player
             if (patrolScript != null)
             {
-                patrolScript.playerInChase = true;
+                //code fix : remove slashes when ai controllera is fixed
+                //patrolScript.playerInChase = true;
                 Debug.Log("Player entered chase range");
             }
         }
@@ -29,7 +30,8 @@ public class AiChase : MonoBehaviour
         {
             if (patrolScript != null)
             {
-                patrolScript.playerInChase = false;
+                //code fix : remove slashes when ai controllera is fixed
+                //patrolScript.playerInChase = false;
                 Debug.Log("Player exited chase range");
             }
         }

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.AI;
 
 public class Patrol : MonoBehaviour
 {
@@ -68,3 +67,4 @@ public class Patrol : MonoBehaviour
     }
 
 }
+

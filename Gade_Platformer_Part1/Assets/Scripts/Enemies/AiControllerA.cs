@@ -3,11 +3,11 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
-
+[RequireComponent(typeof(NavMeshAgent))]
 public class AiControllerA : MonoBehaviour
 {
     //State declaration
-    public State currentState;
+    /*public State currentState;
     private Dictionary<State, Action> stateActions;
 
     //Collider Checkers
@@ -15,10 +15,10 @@ public class AiControllerA : MonoBehaviour
     public bool playerInAttack;
 
     //Patrol Declaration
-    public List<Transform> patrolPoints;
+    private List<Transform> patrolPoints;
 
-    private LinkedList<Transform> patrolPath = new LinkedList<Transform>();
-    private LinkedListNode<Transform> currentPatrolNode;
+    private PatrolPath patrolPath;
+    private Patrollnode currentPatrolNode;
 
     //NavMeshAgent Declaration
     private NavMeshAgent agent;
@@ -40,6 +40,8 @@ public class AiControllerA : MonoBehaviour
     public float chaseRange = 5f;
     public float attackRange = 2f;
     private float distanceToPlayer;
+    private Enemy enemyData;
+    public PatrolRoute patrolRoute;
 
 
     //State declaration
@@ -51,45 +53,93 @@ public class AiControllerA : MonoBehaviour
         Return
     }
     private void Start()
-    {
-        agent = GetComponent<NavMeshAgent>();
-        playerData = player.GetComponent<PlayerCheckpointDatat>();
+    {*/
 
-        //Create a for loop to convert the list into a linked list
-        for (int i = 0; i < patrolPoints.Count; i++)
+        /*agent = GetComponent<NavMeshAgent>();
+         playerData = player.GetComponent<PlayerCheckpointDatat>();
+         enemyData = GetComponent<Enemy>();
+
+         enemyData.Initialize(); // ensures stats are applied
+
+         agent.speed = enemyData.MoveSpeed;
+         if (enemyData == null)
+         {
+             Debug.LogError("Enemy component missing!");
+             return;
+         }
+         //Create a for loop to convert the list into a linked list
+         for (int i = 0; i < patrolPoints.Count; i++)
+         {
+             patrolPath.AddLast(patrolPoints[i]);
+         }
+
+         //Start at the first point of the node
+         currentPatrolNode = patrolPath.First;
+         if (currentPatrolNode != null)
+         {
+             agent.SetDestination(currentPatrolNode.Value.position);
+         }
+
+         //Set the enemy to patrolling at the start of the game
+         currentState = State.Patrolling;
+
+         //Set the threshold damage for the player
+         attackDamageThreshold = Random.Range(3, 6);
+
+         //Set up the state actions
+         stateActions = new Dictionary<State, Action>
+         {
+             {
+                 State.Patrolling, PatrolState
+             },
+             {
+                 State.Chasing, ChaseState
+             },
+             {
+                 State.Attacking, AttackState
+             },
+             {
+                 State.Return, ReturnState
+             }
+         };*/
+
+        /*agent = GetComponent<NavMeshAgent>();
+
+        if (player == null)
         {
-            patrolPath.AddLast(patrolPoints[i]);
+            Debug.LogError("Player not assigned!");
+            return;
         }
 
-        //Start at the first point of the node
-        currentPatrolNode = patrolPath.First;
-        if (currentPatrolNode != null)
+        playerData = player.GetComponent<PlayerCheckpointDatat>();*/
+
+        //Code issue
+        //enemyData = GetComponent<Enemy>();
+
+        /*if (enemyData == null)
         {
-            agent.SetDestination(currentPatrolNode.Value.position);
-        }
+            Debug.LogError("Enemy component missing!");
+            return;
+        }*/
 
-        //Set the enemy to patrolling at the start of the game
-        currentState = State.Patrolling;
+        // Apply Fast/Normal/Heavy stats
+        /*Debug.Log("Enemy found: " + GetComponent<Enemy>());
+        Debug.Log("Enemy children count: " + GetComponentsInChildren<Enemy>().Length);
+        //enemyData.Initialize();//code issue
 
-        //Set the threshold damage for the player
+        // Apply speed to NavMesh
+        //agent.speed = enemyData.MoveSpeed;//code issue
         attackDamageThreshold = Random.Range(3, 6);
 
-        //Set up the state actions
-        stateActions = new Dictionary<State, Action>
-        {
-            {
-                State.Patrolling, PatrolState
-            },
-            {
-                State.Chasing, ChaseState
-            },
-            {
-                State.Attacking, AttackState
-            },
-            {
-                State.Return, ReturnState
-            }
-        };
+        currentState = State.Patrolling;
+
+        stateActions = new Dictionary<State, Action>()
+    {
+        { State.Patrolling, PatrolState },
+        { State.Chasing, ChaseState },
+        { State.Attacking, AttackState },
+        { State.Return, ReturnState }
+    };
     }
     private void Update()
     {
@@ -110,8 +160,8 @@ public class AiControllerA : MonoBehaviour
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
             //Move to the next node
-            currentPatrolNode = currentPatrolNode.Next;
-
+            //currentPatrolNode = currentPatrolNode.Next;
+            currentPatrolNode = patrolPath.GetNextNode(currentPatrolNode);
             //Loop back to the first node
             if (currentPatrolNode == null)
             {
@@ -168,14 +218,15 @@ public class AiControllerA : MonoBehaviour
         //Move the ememy away after attacking the player
         Vector3 direction = (transform.position - collision.transform.position).normalized;
 
-        transform.position += direction * bounceForce;
+        //transform.position += direction * bounceForce;
+        agent.Move(direction * bounceForce);
         agent.isStopped = false;
 
-        /*if (Time.time - lastAttackTime >= coolDownPoint)
+        if (Time.time - lastAttackTime >= coolDownPoint)
         {
             lastAttackTime = Time.time;
             Vector3 bounceDirection = (transform.position - collision.transform.position).normalized;
-            agent.Move(bounceDirection * bounceForce);
+            //agent.Move(bounceDirection * bounceForce);
         }
         //Return to chase state if the player is in range
         if (playerInChase)
@@ -185,13 +236,15 @@ public class AiControllerA : MonoBehaviour
         else if (!playerInChase)
         {
             currentState = State.Return;
-        }*/
+        }
     }
     void ChaseState()
     {
         //Set movemnt as always on
         agent.isStopped = false;
-        //Call the chase function
+
+        
+        //////Call the chase function
         ChasePLY();
         //Transition to return state if the player is out of chase range
         if (!playerInChase)
@@ -225,6 +278,18 @@ public class AiControllerA : MonoBehaviour
         {
             currentState = State.Chasing;
         }
+       /* if (!enemyData.IsPatrolling)
+        {
+            return;
+        }*/
+
+        /*Patrolling();
+
+        if (playerInChase)
+        {
+            currentState = State.Chasing;
+        }
+        
     }
     void Returning()
     {
@@ -240,11 +305,64 @@ public class AiControllerA : MonoBehaviour
     void ReturnState()
     {
         //Call the return function
-        Returning();
-        //Transition to chase state if the player is in chase range
-        if (playerInChase)
-        {
-            currentState = State.Chasing;
-        }
+         Returning();
+         //Transition to chase state if the player is in chase range
+         if (playerInChase)
+         {
+             currentState = State.Chasing;
+         }
+        
     }
+    public void SetPatrolPoints(List<Transform> points)
+    {
+        /*patrolPoints = points;
+
+        patrolPath = new PatrolPath();
+
+        foreach (Transform point in patrolPoints)
+        {
+            patrolPath.AddLast(point);
+        }
+
+        currentPatrolNode = patrolPath.First;
+
+        if (currentPatrolNode != null)
+        {
+            agent.SetDestination(currentPatrolNode.Value.position);
+        }*/
+        /*patrolPoints = points;
+
+        patrolPath = new PatrolPath();
+
+        foreach (Transform point in patrolPoints)
+        {
+            patrolPath.AddLast(point);
+        }
+
+        currentPatrolNode = patrolPath.First;
+
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+
+        if (currentPatrolNode != null && agent.isOnNavMesh)
+        {
+            agent.SetDestination(currentPatrolNode.Value.position);
+        }
+        currentState = State.Patrolling;
+        agent.isStopped = false;
+    }
+    public void InitEnemy()
+    {
+        enemyData = GetComponent<Enemy>();
+
+        if (enemyData == null)
+        {
+            Debug.LogError("Enemy not found on InitEnemy()");
+            return;
+        }
+
+        enemyData.Initialize();
+        agent.speed = enemyData.MoveSpeed;
+    }*/
 }
+
+ 
