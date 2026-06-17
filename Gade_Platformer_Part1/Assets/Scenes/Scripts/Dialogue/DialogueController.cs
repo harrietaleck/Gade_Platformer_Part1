@@ -33,6 +33,16 @@ public class DialogueController : MonoBehaviour
         ShowNextLine();
     }
 
+    private void PauseGameplay()
+    {
+        Time.timeScale = 0f;
+    }
+
+    private void ResumeGameplay()
+    {
+        Time.timeScale = 1f;
+    }
+
     private void LoadDialogueForCurrentScene()
     {
         string activeSceneName = SceneManager.GetActiveScene().name;
@@ -52,6 +62,8 @@ public class DialogueController : MonoBehaviour
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(true);
+
+        PauseGameplay();
     }
 
     public void ShowNextLine()
@@ -60,6 +72,7 @@ public class DialogueController : MonoBehaviour
         {
             if (dialoguePanel != null)
                 dialoguePanel.SetActive(false);
+            ResumeGameplay();
             return;
         }
 

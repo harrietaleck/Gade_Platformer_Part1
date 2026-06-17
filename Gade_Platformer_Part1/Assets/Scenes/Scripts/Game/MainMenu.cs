@@ -2,27 +2,29 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class PauseScreen : MonoBehaviour
+public class MainMenu : MonoBehaviour
 {
+    [Header("Scene Names")]
+    public string beginnerSceneName = "Beginner";
+    public string advancedSceneName = "Advanced";
+    public string expertSceneName = "Expert";
+
     [Header("Panels")]
-    public GameObject pausePanel;
     public GameObject settingsPanel;
+    public GameObject creditsPanel;
     public GameObject confirmQuitPanel;
 
-    [Header("Settings Sliders")]
+    [Header("Settings")]
     public Slider masterVolumeSlider;
     public Slider musicVolumeSlider;
     public Slider sfxVolumeSlider;
 
-    [Header("Scene Names")]
-    public string mainMenuSceneName = "MainMenu";
-
-    private static bool isPaused = false;
-
     private void Start()
     {
-        if (pausePanel != null)     pausePanel.SetActive(false);
-        if (settingsPanel != null)  settingsPanel.SetActive(false);
+        Time.timeScale = 1f;
+
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+        if (creditsPanel != null)  creditsPanel.SetActive(false);
         if (confirmQuitPanel != null) confirmQuitPanel.SetActive(false);
 
         if (masterVolumeSlider != null)
@@ -33,41 +35,21 @@ public class PauseScreen : MonoBehaviour
             sfxVolumeSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
     }
 
-    private void Update()
+    // ── Level Buttons ──────────────────────────────────────────────
+
+    public void LoadBeginner()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (isPaused)
-                Resume();
-            else
-                Pause();
-        }
+        SceneManager.LoadScene(beginnerSceneName);
     }
 
-    // ── Core Pause / Resume ────────────────────────────────────────
-
-    public void Pause()
+    public void LoadAdvanced()
     {
-        if (pausePanel != null) pausePanel.SetActive(true);
-        Time.timeScale = 0f;
-        isPaused = true;
+        SceneManager.LoadScene(advancedSceneName);
     }
 
-    public void Resume()
+    public void LoadExpert()
     {
-        if (pausePanel != null)    pausePanel.SetActive(false);
-        if (settingsPanel != null) settingsPanel.SetActive(false);
-        Time.timeScale = 1f;
-        isPaused = false;
-    }
-
-    // ── Restart Current Level ──────────────────────────────────────
-
-    public void RestartLevel()
-    {
-        Time.timeScale = 1f;
-        isPaused = false;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene(expertSceneName);
     }
 
     // ── Settings Panel ─────────────────────────────────────────────
@@ -98,16 +80,19 @@ public class PauseScreen : MonoBehaviour
         PlayerPrefs.SetFloat("SFXVolume", value);
     }
 
-    // ── Return to Main Menu ────────────────────────────────────────
+    // ── Credits Panel ──────────────────────────────────────────────
 
-    public void ReturnToMenu()
+    public void OpenCredits()
     {
-        Time.timeScale = 1f;
-        isPaused = false;
-        SceneManager.LoadScene(mainMenuSceneName);
+        if (creditsPanel != null) creditsPanel.SetActive(true);
     }
 
-    // ── Quit Game ──────────────────────────────────────────────────
+    public void CloseCredits()
+    {
+        if (creditsPanel != null) creditsPanel.SetActive(false);
+    }
+
+    // ── Quit ───────────────────────────────────────────────────────
 
     public void OpenConfirmQuit()
     {
@@ -121,7 +106,6 @@ public class PauseScreen : MonoBehaviour
 
     public void QuitGame()
     {
-        Time.timeScale = 1f;
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else

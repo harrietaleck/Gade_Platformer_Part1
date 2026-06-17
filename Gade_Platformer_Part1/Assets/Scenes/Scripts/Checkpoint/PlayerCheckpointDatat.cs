@@ -107,13 +107,21 @@ public class PlayerCheckpointDatat : MonoBehaviour
     {
         lives -= amount;
         Debug.Log("Player Lost a Life! Lives Remaining: " + lives);
-        if (lives == 0)
+        UIText();
+
+        if (lives <= 0)
         {
             Debug.Log("Game Over");
-            lives = 3;
-            SceneManager.LoadScene("StartScreen");
+            if (GameOverScreen.Instance != null)
+            {
+                GameOverScreen.Instance.ShowGameOver(score, lives);
+            }
+            else
+            {
+                // Fallback if GameOverScreen not present in scene
+                SceneManager.LoadScene("MainMenu");
+            }
         }
-        UIText();
     }
     void UIText()
     {
