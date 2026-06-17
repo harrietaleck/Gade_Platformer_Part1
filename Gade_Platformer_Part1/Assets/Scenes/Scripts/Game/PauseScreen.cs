@@ -1,13 +1,28 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class PauseScreen : MonoBehaviour
 {
     public GameObject pauseScreenUI;
-    public GameObject MenuScreenUI;
-    public void ExitGamePlay()
+    void Update()
     {
-        Application.Quit();
+        //Get the key to exit the game
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            //Pause the game
+            Pause();
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            //Restart the game
+            RestartGame();
+        }
+        if(Input.GetKeyDown(KeyCode.O))
+        {
+            //Resume the game
+            Resume();
+        }
     }
     public void Pause()
     {
@@ -21,10 +36,12 @@ public class PauseScreen : MonoBehaviour
         //Resume the game
         Time.timeScale = 1f;
     }
-    public void ReturnToMenu()
+    public void RestartGame()
     {
-        MenuScreenUI.SetActive(true);
-        Time.timeScale = 0f;
+        //Restart the game
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        //Resume the game
+        Time.timeScale = 1f;
     }
 
 }
