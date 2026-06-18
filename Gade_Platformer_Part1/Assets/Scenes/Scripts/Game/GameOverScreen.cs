@@ -9,10 +9,15 @@ public class GameOverScreen : MonoBehaviour
     [Header("Panel")]
     public GameObject gameOverPanel;
 
-    [Header("Stats Display")]
+    [Header("Text Fields")]
+    public TMP_Text headlineText;       // "GAME OVER"
+    public TMP_Text scoreboardText;     // full collectibles breakdown
+    public TMP_Text levelNameText;      // which scene the player died in
+
+    // Legacy fields — kept so existing scene wiring doesn't break
+    [Header("Legacy (optional)")]
     public TMP_Text finalScoreText;
     public TMP_Text finalLivesText;
-    public TMP_Text levelNameText;
 
     [Header("Scene Names")]
     public string mainMenuSceneName = "MainMenu";
@@ -24,29 +29,67 @@ public class GameOverScreen : MonoBehaviour
             gameOverPanel.SetActive(false);
     }
 
-    // Called by PlayerCheckpointDatat when lives reach zero
-    public void ShowGameOver(int finalScore, int finalLives)
+    // ── Show the Game Over screen ─────────────────────────────────
+    // Called by PlayerCheckpointDatat when lives reach zero.
+    public void ShowGameOver(int finalScore, int livesLeft)
     {
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
 
         Time.timeScale = 0f;
 
-        if (finalScoreText != null)
-            finalScoreText.text = "Score: " + finalScore;
-
-        if (finalLivesText != null)
-            finalLivesText.text = "Lives Left: " + finalLives;
-
+        // Level name
+        string sceneName = SceneManager.GetActiveScene().name;
         if (levelNameText != null)
-            levelNameText.text = "Level: " + SceneManager.GetActiveScene().name;
+            levelNameText.text = "Level: " + sceneName;
+
+        // Headline
+        if (headlineText != null)
+            headlineText.text = "GAME OVER";
+
+        // Build scoreboard from GameManager counters
+        var gm = GameManager.Instance;
+        int stones   = gm != null ? gm.thermalStonesCollected  : 0;
+        int food     = gm != null ? gm.foodSuppliesCollected    : 0;
+        int clothing = gm != null ? gm.winterClothingCollected  : 0;
+        int total    = gm != null ? gm.TotalCollected           : 0;
+        int sc       = gm != null ? gm.score                    : finalScore;
+
+        string board =
+            $"Score:  {sc}\n" +
+            $"─────────────────\n" +
+            $"Thermal Stones:   {stones}\n" +
+            $"Food Supplies:    {food}\n" +
+            $"Winter Clothing:  {clothing}\n" +
+            $"─────────────────\n" +
+            $"Total Pickups:    {total}";
+
+        // Prefer the new scoreboardText; fall back to finalScoreText
+        if (scoreboardText != null)
+            scoreboardText.text = board;
+        else if (finalScoreText != null)
+            finalScoreText.text = board;
+
+        // Legacy lives text
+        if (finalLivesText != null)
+            finalLivesText.text = "Lives Left: " + livesLeft;
     }
 
-    // ── Buttons ────────────────────────────────────────────────────
+    // ── Buttons ───────────────────────────────────────────────────
 
     public void RetryLevel()
     {
         Time.timeScale = 1f;
+        // Reset per-scene pickup counter so the goal works again
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.pickupsThisScene = 0;
+            // Reset collected counters for a fresh retry
+            GameManager.Instance.thermalStonesCollected  = 0;
+            GameManager.Instance.foodSuppliesCollected   = 0;
+            GameManager.Instance.winterClothingCollected = 0;
+            GameManager.Instance.score = 0;
+        }
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 

@@ -6,6 +6,7 @@ public class NormEnemy : Enemy
     {
         MoveSpeed = 2;
         AgentSize = 1f;
+        VisualScale = 0.35f;
         AppearanceColor = Color.yellow;
         IsPatrolling = true;
     }

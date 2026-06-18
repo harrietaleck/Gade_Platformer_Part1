@@ -64,6 +64,14 @@ public class Player : MonoBehaviour
     // does NOT set this, so the player goes straight to Fall.
     private bool jumpAscending;
 
+    // --- Hurt state ---
+    // isHurt: true for hurtDuration seconds after TriggerHurt() is called.
+    // While hurt, UpdateAnimationState() overrides normal locomotion and
+    // plays the Fall clip as a "knockback" visual proxy.
+    private bool  isHurt       = false;
+    private float hurtEndTime  = -1f;
+    private const float hurtDuration = 0.5f;
+
     // --- SFX state (Part 3 D3) ---
     // wasGrounded: remembers last frame's grounded state so we can detect
     // the exact frame the player lands (transition from air -> ground).
@@ -117,7 +125,27 @@ public class Player : MonoBehaviour
             lastWalkSoundTime = Time.time;
         }
 
+        // Clear the hurt flag once the brief hurt window has elapsed.
+        if (isHurt && Time.time >= hurtEndTime)
+            isHurt = false;
+
         UpdateAnimationState();
+    }
+
+    // ── Public API ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Called by AiAttack when the player takes a hit.
+    /// Plays the Fall animation briefly as a knockback visual, and triggers
+    /// the screen-flash effect on PlayerHurtEffect if it is attached.
+    /// </summary>
+    public void TriggerHurt()
+    {
+        isHurt      = true;
+        hurtEndTime = Time.time + hurtDuration;
+
+        // Screen flash — PlayerHurtEffect is an optional component on this GameObject.
+        GetComponent<PlayerHurtEffect>()?.TriggerFlash();
     }
 
     // --- Input ----------------------------------------------------------------
@@ -233,13 +261,25 @@ public class Player : MonoBehaviour
             return;
         }
 
+        // Search children first (typical setup: character model is a child of the player root).
         foreach (var a in GetComponentsInChildren<Animator>(includeInactive: true))
         {
-            if (a.transform == transform) continue;
+            if (a.transform == transform) continue; // prefer child; check root below if nothing found
             animator = a;
             animator.applyRootMotion = false;
             return;
         }
+
+        // Fall back: animator is on the root GameObject itself.
+        animator = GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.applyRootMotion = false;
+            return;
+        }
+
+        Debug.LogWarning($"[Player] No Animator found on '{name}' or its children. " +
+                         "Drag one into the Animator field in the Inspector.");
     }
 
     private void UpdateAnimationState()
@@ -247,7 +287,14 @@ public class Player : MonoBehaviour
         if (animator == null || disableAnimationForConflictTest) return;
 
         int state;
-        if (!controller.isGrounded)
+
+        // While hurt: play the Fall clip as a brief knockback visual.
+        // This overrides the normal locomotion state for hurtDuration seconds.
+        if (isHurt)
+        {
+            state = StateFall;
+        }
+        else if (!controller.isGrounded)
         {
             // Jump only fires while we're in the upward arc of a Space-initiated jump.
             // Walking off a ledge or rebounding on geometry goes straight to Fall and

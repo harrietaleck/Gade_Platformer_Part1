@@ -1,4 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public enum CollectableType
 {
@@ -17,6 +20,20 @@ public class CollectablePickup : MonoBehaviour
     public int scoreValue = 10;
     public int itemAmount = 1;
     public int livesToRestore = 0;
+
+    [Header("Sound")]
+    public AudioClip collectSFX;   // Auto-assigned in Editor from Casual Game Sounds U6/collectSound.wav
+
+#if UNITY_EDITOR
+    // Called when the component is first added or Reset is chosen in the Inspector.
+    // Automatically fills collectSFX so no manual wiring is needed.
+    private void Reset()
+    {
+        if (collectSFX == null)
+            collectSFX = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/Casual Game Sounds U6/CasualGameSounds/collectSound.wav");
+    }
+#endif
 
     private void OnTriggerEnter(Collider other)
     {
@@ -45,10 +62,9 @@ public class CollectablePickup : MonoBehaviour
             }
         }
 
-        // --- SFX: collect sound (Part 3 D3) ---
-        // PlayOneShot lives on the GameManager AudioSource, so the clip
-        // continues to play even after this GameObject is destroyed.
-        SFXManager.Instance?.PlaySound("collect");
+        // Play clip at world position — works even after this object is destroyed
+        if (collectSFX != null)
+            AudioSource.PlayClipAtPoint(collectSFX, transform.position);
 
         Destroy(gameObject);
     }

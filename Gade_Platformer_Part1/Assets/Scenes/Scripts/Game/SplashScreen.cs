@@ -5,45 +5,61 @@ using UnityEngine.UI;
 
 public class SplashScreen : MonoBehaviour
 {
-    [Header("Splash Settings")]
+    [Header("References")]
     public Image splashImage;
-    public float displayDuration = 3f;
-    public float fadeDuration = 0.5f;
-    public string nextSceneName = "StartScreen";
 
-    private void Start()
+    [Header("Timing")]
+    public float fadeInDuration  = 1.2f;
+    public float holdDuration    = 2.0f;
+    public float fadeOutDuration = 0.8f;
+
+    [Header("Scene")]
+    public string nextSceneName = "MainMenu";
+
+    void Start()
     {
-        if (splashImage != null)
-        {
-            Color c = splashImage.color;
-            c.a = 1f;
-            splashImage.color = c;
-        }
-
+        Time.timeScale = 1f;
+        SetAlpha(splashImage, 0f);
         StartCoroutine(SplashRoutine());
     }
 
-    private IEnumerator SplashRoutine()
+    IEnumerator SplashRoutine()
     {
-        yield return new WaitForSeconds(displayDuration);
-        yield return StartCoroutine(FadeOut());
+        yield return StartCoroutine(FadeImageRealtime(splashImage, 0f, 1f, fadeInDuration, Ease.OutCubic));
+        yield return new WaitForSecondsRealtime(holdDuration);
+        yield return StartCoroutine(FadeImageRealtime(splashImage, 1f, 0f, fadeOutDuration, Ease.InCubic));
         SceneManager.LoadScene(nextSceneName);
     }
 
-    private IEnumerator FadeOut()
-    {
-        float elapsed = 0f;
-        Color c = splashImage.color;
+    enum Ease { Linear, OutCubic, InCubic }
 
-        while (elapsed < fadeDuration)
+    IEnumerator FadeImageRealtime(Image img, float from, float to, float duration, Ease ease = Ease.Linear)
+    {
+        if (img == null) yield break;
+        float t = 0f;
+        while (t < duration)
         {
-            elapsed += Time.deltaTime;
-            c.a = Mathf.Lerp(1f, 0f, elapsed / fadeDuration);
-            splashImage.color = c;
+            t += Time.unscaledDeltaTime;
+            float p = ApplyEase(Mathf.Clamp01(t / duration), ease);
+            SetAlpha(img, Mathf.Lerp(from, to, p));
             yield return null;
         }
+        SetAlpha(img, to);
+    }
 
-        c.a = 0f;
-        splashImage.color = c;
+    static float ApplyEase(float p, Ease ease)
+    {
+        switch (ease)
+        {
+            case Ease.OutCubic: return 1f - Mathf.Pow(1f - p, 3f);
+            case Ease.InCubic:  return p * p * p;
+            default:            return p;
+        }
+    }
+
+    static void SetAlpha(Graphic g, float a)
+    {
+        if (g == null) return;
+        Color c = g.color; c.a = a; g.color = c;
     }
 }

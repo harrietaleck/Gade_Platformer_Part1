@@ -378,25 +378,36 @@ public class SFXManager : MonoBehaviour
 // ============================================================
 public static class SFXBootstrap
 {
-    // AfterSceneLoad fires once per scene, after all Awake() calls.
-    // GameManager.Instance (set in Awake) is used instead of Find("GameManager"):
-    // Find can return a duplicate GameManager that Destroy()s itself, which would
-    // destroy the AudioSource and silence all SFX for the rest of the scene.
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    // BeforeSceneLoad runs once at startup — we use it solely to subscribe
+    // to sceneLoaded, which then fires every time any scene is loaded.
+    // This ensures SFXManager is created as soon as a GameManager-containing
+    // scene appears (Beginner, Advanced, Expert) regardless of start order.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Init()
     {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene,
+                                       UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        // If SFXManager already exists (persisted from a previous scene), stop here.
+        if (SFXManager.Instance != null) return;
+
+        // Find the GameManager — it hosts the AudioSource + SFXManager.
+        // Prefer the static Instance so we never accidentally reference a
+        // duplicate that is mid-Destroy.
         GameObject gm = (GameManager.Instance != null)
             ? GameManager.Instance.gameObject
             : GameObject.Find("GameManager");
-        if (gm == null) return; /*�
-�
-        */ // AudioSource must exist before SFXManager is added
-        // because [RequireComponent] checks for it on AddComponent.
+
+        if (gm == null) return;   // SplashScreen / MainMenu — no GameManager yet
+
+        // AudioSource must exist before SFXManager is added
+        // because [RequireComponent(typeof(AudioSource))] checks for it.
         if (gm.GetComponent<AudioSource>() == null)
             gm.AddComponent<AudioSource>();
 
-        // Add SFXManager only if it isn't already on the object
-        // (guards against SFXBootstrap running more than once).
         if (gm.GetComponent<SFXManager>() == null)
             gm.AddComponent<SFXManager>();
     }
