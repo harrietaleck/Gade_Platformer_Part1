@@ -1,18 +1,42 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
+// Fall zone / kill plane placed below the platforms.
+// Falling off a platform into this trigger is an INSTANT game over:
+// the Game Over screen is shown and the player can start the level over
+// via the Retry button (or the level reloads directly as a fallback).
 public class DeathTrigger : MonoBehaviour
 {
+    private bool _triggered;
+
     private void OnTriggerEnter(Collider other)
     {
-        PlayerCheckpointDatat player = other.GetComponent<PlayerCheckpointDatat>();
+        if (_triggered) return;
 
-        if (player != null)
+        PlayerCheckpointDatat player = other.GetComponent<PlayerCheckpointDatat>();
+        if (player == null) return;
+
+        _triggered = true;
+
+        // --- SFX: fall/hit sound ---
+        SFXManager.Instance?.PlaySound("hit");
+
+        // Falling off ends the run immediately.
+        int finalScore = GameManager.Instance != null ? GameManager.Instance.score : player.score;
+
+        // Keep displayed lives consistent with a game over.
+        player.lives = 0;
+        if (GameManager.Instance != null)
+            GameManager.Instance.lives = 0;
+
+        if (GameOverScreen.Instance != null)
         {
-            // --- SFX: hit sound (Part 3 D3) ---
-            // Plays when the player falls into a death zone trigger.
-            SFXManager.Instance?.PlaySound("hit");
-            player.LoseLife();
-            player.Death();
+            GameOverScreen.Instance.ShowGameOver(finalScore, 0);
+        }
+        else
+        {
+            // No Game Over UI in this scene — restart the level so the player starts over.
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 }

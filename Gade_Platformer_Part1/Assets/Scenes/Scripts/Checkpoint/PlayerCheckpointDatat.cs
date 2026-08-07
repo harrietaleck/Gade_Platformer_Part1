@@ -105,6 +105,9 @@ public class PlayerCheckpointDatat : MonoBehaviour
     }
     public void LoseLife()
     {
+        // Already dead / game over — ignore further hits.
+        if (lives <= 0) return;
+
         lives -= amount;
         Debug.Log("Player Lost a Life! Lives Remaining: " + lives);
 
@@ -113,33 +116,26 @@ public class PlayerCheckpointDatat : MonoBehaviour
             GameManager.Instance.lives = lives;
 
         UIText();
+        UIManager.Instance?.RefreshHUD();
 
-        // Game over when all 3 lives are lost
+        // Game over when all health is gone
         if (lives <= 0)
         {
-            Debug.Log("Game Over — 3 lives lost.");
+            Debug.Log("Game Over — health depleted.");
 
-            // Use GameManager score so pickups are reflected correctly
             int finalScore = GameManager.Instance != null ? GameManager.Instance.score : score;
 
             if (GameOverScreen.Instance != null)
-            {
-                GameOverScreen.Instance.ShowGameOver(finalScore, lives);
-            }
+                GameOverScreen.Instance.ShowGameOver(finalScore, 0);
             else
-            {
                 SceneManager.LoadScene("MainMenu");
-            }
         }
     }
     void UIText()
     {
-        //Update the HUD Texts
-        if (livesText == null) return;
-        if (scoreText == null) return;
-
-        livesText.text = "Lives: " + lives;
-        scoreText.text = "Score: " + score;
-
+        if (livesText != null)
+            livesText.text = "Health: " + Mathf.Max(0, lives);
+        if (scoreText != null)
+            scoreText.text = "Score: " + score;
     }
 }
