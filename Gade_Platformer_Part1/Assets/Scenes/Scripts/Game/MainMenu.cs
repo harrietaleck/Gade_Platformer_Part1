@@ -75,11 +75,11 @@ public class MainMenu : MonoBehaviour
                                   0.5f, 0.65f, new Color(0.15f, 0.55f, 0.25f));
         btnBeginner.onClick.AddListener(LoadBeginner);
 
-        var btnAdvanced = MakeBtn(bg, "Button_Advanced", "Moving Platform Level",
+        var btnAdvanced = MakeBtn(bg, "Button_Advanced", "Advanced Level",
                                   0.5f, 0.53f, new Color(0.15f, 0.35f, 0.65f));
         btnAdvanced.onClick.AddListener(LoadAdvanced);
 
-        var btnExpert = MakeBtn(bg, "Button_Expert", "Final Level",
+        var btnExpert = MakeBtn(bg, "Button_Expert", "Expert Level",
                                 0.5f, 0.41f, new Color(0.65f, 0.20f, 0.15f));
         btnExpert.onClick.AddListener(LoadExpert);
 
@@ -164,7 +164,7 @@ public class MainMenu : MonoBehaviour
 
     GameObject BuildGuidePanel()
     {
-        // Full-screen background
+        // Full-screen background (title "GUIDE" is baked into the artwork)
         var panel = new GameObject("GuidePanel", typeof(RectTransform), typeof(Image));
         panel.transform.SetParent(rootCanvas.transform, false);
         var r = panel.GetComponent<RectTransform>();
@@ -181,41 +181,15 @@ public class MainMenu : MonoBehaviour
         else
             img.color = new Color(0.05f, 0.05f, 0.15f, 0.97f);
 
-        // Semi-transparent content card overlaid on top of the background image
-        var card = new GameObject("ContentCard", typeof(RectTransform), typeof(Image));
-        card.transform.SetParent(panel.transform, false);
-        var cr = card.GetComponent<RectTransform>();
-        cr.anchorMin = new Vector2(0.05f, 0.08f); cr.anchorMax = new Vector2(0.95f, 0.92f);
-        cr.offsetMin = cr.offsetMax = Vector2.zero;
-        card.GetComponent<Image>().color = new Color(0.92f, 0.95f, 1.0f, 0.88f); // light icy-white, navy text readable
+        // Attach GuideScreen so it builds the readable content card
+        var guide = panel.AddComponent<GuideScreen>();
+        guide.guidePanel = panel;
 
-        // Navy-blue palette \u2014 readable on both the light GuideBackground image
-        // and the semi-transparent card overlay.
-        var navyTitle   = new Color(0.00f, 0.05f, 0.35f); // deep navy  (headings)
-        var navySection = new Color(0.00f, 0.10f, 0.45f); // mid navy   (section labels)
-        var navyBody    = new Color(0.05f, 0.15f, 0.50f); // softer navy (body text)
-
-        // Title
-        MakeTxtWide(card, "PLAYER GUIDE",  0.5f, 0.91f, 36, navyTitle,   FontStyles.Bold, 700);
-
-        // Section: Movement
-        MakeTxtWide(card, "MOVEMENT",      0.5f, 0.80f, 20, navySection, FontStyles.Bold, 600);
-        MakeTxtWide(card, "Move Left       A  or  \u2190 Arrow",  0.5f, 0.72f, 17, navyBody, FontStyles.Normal, 600);
-        MakeTxtWide(card, "Move Right      D  or  \u2192 Arrow",  0.5f, 0.64f, 17, navyBody, FontStyles.Normal, 600);
-        MakeTxtWide(card, "Jump            Space  or  \u2191 Arrow", 0.5f, 0.56f, 17, navyBody, FontStyles.Normal, 600);
-        MakeTxtWide(card, "Crouch / Fall   S  or  \u2193 Arrow",  0.5f, 0.48f, 17, navyBody, FontStyles.Normal, 600);
-
-        // Section: Combat
-        MakeTxtWide(card, "COMBAT",        0.5f, 0.37f, 20, navySection, FontStyles.Bold, 600);
-        MakeTxtWide(card, "Attack         Left Mouse Button",  0.5f, 0.29f, 17, navyBody, FontStyles.Normal, 600);
-        MakeTxtWide(card, "Aim / Look     Move Mouse",         0.5f, 0.21f, 17, navyBody, FontStyles.Normal, 600);
-
-        // Section: Game
-        MakeTxtWide(card, "GAME",          0.5f, 0.11f, 20, navySection, FontStyles.Bold, 600);
-        MakeTxtWide(card, "Pause          Escape",             0.5f, 0.03f, 17, navyBody, FontStyles.Normal, 600);
-
-        var closeBtn = MakeBtn(panel, "Button_CloseGuide", "Close Guide", 0.5f, 0.04f, new Color(0.7f, 0.2f, 0.2f));
-        closeBtn.onClick.AddListener(CloseGuide);
+        var closeBtn = MakeBtn(panel, "Button_CloseGuide", "Close", 0.66f, 0.09f, new Color(0.25f, 0.45f, 0.85f));
+        closeBtn.onClick.AddListener(() => guide.Close());
+        // Build content once so first open is instant
+        guide.Open();
+        guide.Close();
         return panel;
     }
 
@@ -416,8 +390,21 @@ public class MainMenu : MonoBehaviour
 
     // ── Guide Panel ────────────────────────────────────────────────
 
-    public void OpenGuide()  { if (guidePanel != null) guidePanel.SetActive(true); }
-    public void CloseGuide() { if (guidePanel != null) guidePanel.SetActive(false); }
+    public void OpenGuide()
+    {
+        if (guidePanel == null) return;
+        var gs = guidePanel.GetComponent<GuideScreen>();
+        if (gs != null) gs.Open();
+        else guidePanel.SetActive(true);
+    }
+
+    public void CloseGuide()
+    {
+        if (guidePanel == null) return;
+        var gs = guidePanel.GetComponent<GuideScreen>();
+        if (gs != null) gs.Close();
+        else guidePanel.SetActive(false);
+    }
 
     // ── Quit ───────────────────────────────────────────────────────
 
