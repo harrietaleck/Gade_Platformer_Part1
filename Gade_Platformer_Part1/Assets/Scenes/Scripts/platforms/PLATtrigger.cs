@@ -3,12 +3,14 @@ using UnityEngine;
 public class PLATtrigger : MonoBehaviour
 {
     public MOVEplatform platform;
-    //Activate the platform when the player enters the trigger
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            platform.Activate();
-        }
+        if (!other.CompareTag("Player")) return;
+
+        if (platform == null)
+            platform = FindObjectOfType<MOVEplatform>();
+
+        platform?.Activate();
     }
 }
