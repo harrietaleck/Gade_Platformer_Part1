@@ -187,14 +187,17 @@ public class Player : MonoBehaviour
     private static bool ReadRunHeld()
     {
         // Project has Active Input Handling = Both, so check whichever path reports true.
-        // We accept Left or Right Shift to avoid keyboard-layout surprises.
+        // Left/Right Shift OR Left Ctrl (common run bindings).
 #if ENABLE_INPUT_SYSTEM
         var kb = Keyboard.current;
-        if (kb != null && (kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed))
+        if (kb != null &&
+            (kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed ||
+             kb.leftCtrlKey.isPressed  || kb.rightCtrlKey.isPressed))
             return true;
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER || !ENABLE_INPUT_SYSTEM
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        if (Input.GetKey(KeyCode.LeftShift)  || Input.GetKey(KeyCode.RightShift) ||
+            Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
             return true;
 #endif
         return false;
