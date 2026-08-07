@@ -29,6 +29,62 @@ public static class GameSetupBuilder
     }
 
     // ══════════════════════════════════════════════════════════════
+    // STYLISH FONT – bake Jupiter as TMP SDF under Resources
+    // ══════════════════════════════════════════════════════════════
+    [MenuItem("Tools/GameSetup/Create Jupiter TMP Font")]
+    public static void CreateJupiterTmpFontAsset()
+    {
+        const string sourceFont = "Assets/Resources/Fonts/Jupiter.ttf";
+        const string outputAsset = "Assets/Resources/Fonts/JupiterSDF.asset";
+
+        var font = AssetDatabase.LoadAssetAtPath<Font>(sourceFont);
+        if (font == null)
+        {
+            Debug.LogError("[Setup] Jupiter font missing at " + sourceFont);
+            return;
+        }
+
+        if (AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(outputAsset) != null)
+            AssetDatabase.DeleteAsset(outputAsset);
+
+        var sdf = TMP_FontAsset.CreateFontAsset(font);
+        if (sdf == null)
+        {
+            Debug.LogError("[Setup] CreateFontAsset failed for Jupiter");
+            return;
+        }
+
+        sdf.name = "JupiterSDF";
+        AssetDatabase.CreateAsset(sdf, outputAsset);
+
+        if (sdf.material != null)
+            AssetDatabase.AddObjectToAsset(sdf.material, sdf);
+        if (sdf.atlasTextures != null)
+        {
+            foreach (var tex in sdf.atlasTextures)
+            {
+                if (tex != null)
+                    AssetDatabase.AddObjectToAsset(tex, sdf);
+            }
+        }
+
+        var liber = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
+            "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+        if (liber != null)
+        {
+            if (sdf.fallbackFontAssetTable == null)
+                sdf.fallbackFontAssetTable = new List<TMP_FontAsset>();
+            if (!sdf.fallbackFontAssetTable.Contains(liber))
+                sdf.fallbackFontAssetTable.Add(liber);
+        }
+
+        EditorUtility.SetDirty(sdf);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Debug.Log("[Setup] Jupiter TMP font ready at " + outputAsset);
+    }
+
+    // ══════════════════════════════════════════════════════════════
     // COLLECT SFX – assign collectSound.wav to all pickup prefabs
     // ══════════════════════════════════════════════════════════════
     [MenuItem("Tools/GameSetup/Step 5 - Assign Collect SFX to Prefabs")]
@@ -343,24 +399,11 @@ public static class GameSetupBuilder
         var panel = MakeFullPanel(cgo.transform, "GuidePanel", "Assets/UI/Textures/GuideBackground.png");
         panel.SetActive(false);
 
-        var controlsTxt = MakeText(panel.transform, "ControlsText",
-            "W / ↑  —  Move Forward\n" +
-            "S / ↓  —  Move Backward\n" +
-            "A / ←  —  Strafe Left\n" +
-            "D / →  —  Strafe Right\n" +
-            "SPACE  —  Jump\n" +
-            "LEFT SHIFT  —  Sprint\n" +
-            "ESC  —  Pause / Resume\n\n" +
-            "Collect Thermal Stones, Food & Clothing!\n" +
-            "Reach checkpoints to save your progress.\n" +
-            "Survive the cold and reach the final level.",
-            24, Color.white);
-        AnchorRect(controlsTxt.gameObject, 0.32f, 0.22f, 0.92f, 0.82f);
-        controlsTxt.alignment = TextAlignmentOptions.TopLeft;
-        controlsTxt.textWrappingMode = TextWrappingModes.Normal;
+        // Content is built at runtime by GuideScreen (laid out below the baked "GUIDE" title).
+        // Do not add ControlsText here — it overlapped the artwork and wrapped key letters.
 
         var closeBtn = GameplayUISamples.CreateButton(panel.transform, "Button_CloseGuide", "Close");
-        GameplayUISamples.AnchorRect(closeBtn.gameObject, 0.4f, 0.04f, 0.6f, 0.14f);
+        GameplayUISamples.AnchorRect(closeBtn.gameObject, 0.45f, 0.04f, 0.65f, 0.12f);
         UnityEventTools.AddPersistentListener(closeBtn.onClick, ctrl.Close);
 
         ctrl.guidePanel = panel;
