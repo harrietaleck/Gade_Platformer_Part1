@@ -1,99 +1,165 @@
-// ============================================================
-// AiAttack.cs  —  Proximity-based damage to the player
-//
-// Uses a distance check in Update() each frame to detect when
-// the player is close enough to take damage. This approach is
-// more reliable than OnCollisionEnter/OnTriggerEnter because
-// the player uses a CharacterController (no Rigidbody), which
-// stops at solid colliders without generating collision events.
-// ============================================================
-
 using UnityEngine;
 
+// ============================================================
+// AiAttack.cs  —  Chase + attack the player on approach
+//
+// When the player enters chaseRange the wolf stops patrolling,
+// runs toward the player, and deals damage once inside hitRadius.
+// Each hit costs one life (via PlayerCheckpointDatat.LoseLife).
+// When lives reach 0, LoseLife shows the Game Over screen.
+// ============================================================
 public class AiAttack : MonoBehaviour
 {
-    [Header("Attack Settings")]
-    // Distance (world units) within which the enemy damages the player.
-    // Tune this in the Inspector to match the visual size of the enemy.
-    [SerializeField] private float hitRadius = 1.5f;
+    [Header("Ranges")]
+    [Tooltip("Distance at which the wolf notices the player and starts chasing.")]
+    [SerializeField] private float chaseRange = 4f;
 
-    // Seconds between consecutive hits — prevents instant repeated damage
-    // and gives the player a brief window to escape after being hit.
+    [Tooltip("Distance at which the wolf deals damage (bite range).")]
+    [SerializeField] private float hitRadius = 1.4f;
+
+    [Header("Combat")]
+    [Tooltip("Seconds between consecutive hits.")]
     [SerializeField] private float attackCooldown = 1.5f;
 
-    // Cached reference to the player transform, found by tag in Start().
-    private Transform player;
+    [Tooltip("Move speed while chasing the player.")]
+    [SerializeField] private float chaseSpeed = 6.5f;
 
-    // Cached reference to PlayerCheckpointDatat — manages lives, score,
-    // and respawn. Lives are stored here, not in GameManager, so this is
-    // the component we call for both LoseLife() and Death().
-    private PlayerCheckpointDatat checkpointData;
+    [Tooltip("How quickly the wolf turns to face the player.")]
+    [SerializeField] private float turnSpeed = 12f;
 
-    // Cached reference to Player — used to trigger the hurt animation
-    // (brief knockback visual + screen flash) when the player is hit.
-    private Player playerScript;
-
-    // Timestamp of the last successful hit, used to enforce the cooldown.
-    private float lastAttackTime = -999f;
+    Patrol _patrol;
+    Transform _player;
+    PlayerCheckpointDatat _checkpointData;
+    Player _playerScript;
+    float _lastAttackTime = -999f;
+    float _visualYawOffset;
 
     private void Start()
     {
-        // Find the player at startup by tag to avoid manual Inspector wiring.
-        // The "Player" tag must be set on the player GameObject in the Inspector.
+        _patrol = GetComponent<Patrol>();
+
+        Transform visual = transform.Find("WolfVisual");
+        _visualYawOffset = visual != null ? visual.localEulerAngles.y : 0f;
+
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-
-        if (playerObj != null)
-        {
-            player = playerObj.transform;
-
-            // PlayerCheckpointDatat holds lives, score, and the respawn stack.
-            // It lives on the Player GameObject itself.
-            checkpointData = playerObj.GetComponent<PlayerCheckpointDatat>();
-            if (checkpointData == null)
-                Debug.LogWarning($"AiAttack on '{name}': PlayerCheckpointDatat not found on Player.");
-
-            // Player script — used to trigger the hurt animation on hit.
-            playerScript = playerObj.GetComponent<Player>();
-            if (playerScript == null)
-                Debug.LogWarning($"AiAttack on '{name}': Player component not found — hurt animation won't play.");
-        }
-        else
+        if (playerObj == null)
         {
             Debug.LogWarning($"AiAttack on '{name}': No GameObject tagged 'Player' found.");
+            enabled = false;
+            return;
         }
+
+        _player = playerObj.transform;
+        _checkpointData = playerObj.GetComponent<PlayerCheckpointDatat>();
+        if (_checkpointData == null)
+            _checkpointData = Object.FindObjectOfType<PlayerCheckpointDatat>();
+
+        _playerScript = playerObj.GetComponent<Player>();
+
+        if (_checkpointData == null)
+            Debug.LogWarning($"AiAttack on '{name}': PlayerCheckpointDatat not found — attacks won't reduce lives.");
     }
 
     private void Update()
     {
-        // Cannot damage if we never found the player in Start().
-        if (player == null) return;
+        if (_player == null || Time.timeScale <= 0f) return;
 
-        // Calculate straight-line distance from this enemy to the player.
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-
-        // Damage the player if they are within range AND the cooldown has elapsed.
-        if (distanceToPlayer <= hitRadius && Time.time - lastAttackTime >= attackCooldown)
+        // Already game over — stop chasing / attacking.
+        if (_checkpointData != null && _checkpointData.lives <= 0)
         {
-            // Record this hit time to start the cooldown.
-            lastAttackTime = Time.time;
+            if (_patrol != null) _patrol.isChasing = false;
+            return;
+        }
 
-            if (checkpointData != null)
-            {
-                // Deduct one life and update the HUD.
-                // LoseLife() also handles game-over (lives == 0 → load StartScreen).
-                checkpointData.LoseLife();
+        float distance = HorizontalDistance(transform.position, _player.position);
 
-                // Teleport the player back to the last saved checkpoint position.
-                // Death() uses the custom Stack ADT (Peek) to retrieve the position
-                // without removing it, so the same checkpoint works for multiple deaths.
-                checkpointData.Death();
-            }
+        if (distance <= chaseRange)
+        {
+            if (_patrol != null)
+                _patrol.isChasing = true;
 
-            // Trigger knockback animation + screen flash on the player.
-            playerScript?.TriggerHurt();
+            // Close in until inside bite range, then hold and face the player.
+            if (distance > hitRadius * 0.85f)
+                MoveToward(_player.position);
+            else
+                FaceToward(_player.position);
 
-            // Play the hit sound via the HashMap SFX Manager (Part 3 D3).
-            SFXManager.Instance?.PlaySound("hit");
+            if (distance <= hitRadius && Time.time - _lastAttackTime >= attackCooldown)
+                PerformAttack();
+        }
+        else
+        {
+            if (_patrol != null)
+                _patrol.isChasing = false;
         }
     }
+
+    void PerformAttack()
+    {
+        _lastAttackTime = Time.time;
+
+        if (_checkpointData != null)
+        {
+            _checkpointData.LoseLife();
+
+            // Respawn at last checkpoint only while lives remain.
+            // LoseLife already opens Game Over when lives hit 0.
+            if (_checkpointData.lives > 0)
+            {
+                _checkpointData.Death();
+                BiteNoticeScreen.ShowBiteNotice();
+            }
+            else if (_patrol != null)
+            {
+                _patrol.isChasing = false;
+            }
+        }
+
+        _playerScript?.TriggerHurt();
+        SFXManager.Instance?.PlaySound("hit");
+    }
+
+    void MoveToward(Vector3 target)
+    {
+        Vector3 targetXZ = new Vector3(target.x, transform.position.y, target.z);
+        FaceToward(targetXZ);
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            targetXZ,
+            chaseSpeed * Time.deltaTime
+        );
+    }
+
+    void FaceToward(Vector3 target)
+    {
+        Vector3 direction = target - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.0001f) return;
+
+        Quaternion faceMove = Quaternion.LookRotation(direction.normalized);
+        Quaternion targetRot = faceMove * Quaternion.Euler(0f, -_visualYawOffset, 0f);
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRot,
+            turnSpeed * Time.deltaTime
+        );
+    }
+
+    static float HorizontalDistance(Vector3 a, Vector3 b)
+    {
+        a.y = 0f;
+        b.y = 0f;
+        return Vector3.Distance(a, b);
+    }
+
+#if UNITY_EDITOR
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(1f, 0.85f, 0.1f, 0.35f);
+        Gizmos.DrawWireSphere(transform.position, chaseRange);
+        Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.45f);
+        Gizmos.DrawWireSphere(transform.position, hitRadius);
+    }
+#endif
 }

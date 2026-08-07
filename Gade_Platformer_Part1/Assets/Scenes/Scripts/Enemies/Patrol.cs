@@ -30,6 +30,10 @@ public class Patrol : MonoBehaviour
     [Header("Movement")]
     public float speed = 5f;
 
+    [Header("Facing")]
+    [Tooltip("How quickly the wolf turns to face the direction it is walking.")]
+    public float turnSpeed = 10f;
+
     // Set true by other scripts (e.g. AiControllerA) to pause patrolling
     // while the enemy is chasing or attacking the player.
     public bool isChasing = false;
@@ -39,6 +43,11 @@ public class Patrol : MonoBehaviour
     // currentNode:      tracks which waypoint the enemy is heading for.
     private PatrolPath patrolLinkedList;
     private Patrollnode currentNode;
+
+    // WolfVisual is authored with a local Y offset (often 180°).  We subtract
+    // that yaw when rotating the root so the nose points along the path,
+    // not the opposite way / stuck facing one world direction.
+    float _visualYawOffset;
 
     void Start()
     {
@@ -67,7 +76,19 @@ public class Patrol : MonoBehaviour
         {
             Debug.LogWarning($"Patrol on '{name}': all patrol points were null. Patrol disabled.");
             enabled = false;
+            return;
         }
+
+        CacheVisualYawOffset();
+    }
+
+    void CacheVisualYawOffset()
+    {
+        Transform visual = transform.Find("WolfVisual");
+        if (visual != null)
+            _visualYawOffset = visual.localEulerAngles.y;
+        else
+            _visualYawOffset = 0f;
     }
 
     void Update()
@@ -100,6 +121,22 @@ public class Patrol : MonoBehaviour
         // Without this, MoveTowards would also pull the enemy up or down
         // toward the waypoint's Y, potentially lifting it off the platform.
         Vector3 targetXZ = new Vector3(target.x, transform.position.y, target.z);
+        Vector3 direction = targetXZ - transform.position;
+        direction.y = 0f;
+
+        // Face the travel direction so the wolf walks forward and turns
+        // when the patrol route changes. Compensate for WolfVisual's local
+        // yaw so the mesh nose (not the root's +Z) points along the path.
+        if (direction.sqrMagnitude > 0.0001f)
+        {
+            Quaternion faceMove = Quaternion.LookRotation(direction.normalized);
+            Quaternion targetRot = faceMove * Quaternion.Euler(0f, -_visualYawOffset, 0f);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRot,
+                turnSpeed * Time.deltaTime
+            );
+        }
 
         transform.position = Vector3.MoveTowards(
             transform.position,
